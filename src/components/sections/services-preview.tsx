@@ -61,8 +61,9 @@ export function ServicesPreview() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.15 }}
+                className="h-full"
               >
-                <Link href={service.href} className="block group">
+                <Link href={service.href} className="block group h-full">
                   <motion.div
                     whileHover={{ y: -8 }}
                     className={`p-10 rounded-3xl border-2 transition-all h-full ${
