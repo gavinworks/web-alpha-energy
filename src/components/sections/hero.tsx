@@ -3,7 +3,7 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, Phone, Leaf, Shield, Zap, Home, Flame, Wind } from "lucide-react";
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 
 const floatingIcons = [
   { Icon: Leaf, delay: 0, x: "10%", y: "20%" },
@@ -22,62 +22,83 @@ const stats = [
 
 export function Hero() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end start"],
   });
 
-  const y = useTransform(scrollYProgress, [0, 1], [0, 200]);
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  // Disable parallax effect on mobile for better performance
+  const y = useTransform(scrollYProgress, [0, 1], [0, isMobile ? 0 : 200]);
+  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, isMobile ? 1 : 0]);
 
   return (
     <section
       ref={containerRef}
-      className="relative min-h-screen flex items-center overflow-hidden pt-20"
+      className="relative min-h-screen flex items-center overflow-hidden pt-20 pb-28 md:pb-0"
     >
       {/* Animated Gradient Mesh Background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-background" />
 
-        {/* Animated gradient orbs */}
-        <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            x: [0, 50, 0],
-            y: [0, 30, 0],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          className="absolute -top-1/4 -left-1/4 w-[800px] h-[800px] rounded-full bg-gradient-to-br from-primary/30 to-primary/5 blur-3xl"
-        />
-        <motion.div
-          animate={{
-            scale: [1.2, 1, 1.2],
-            x: [0, -30, 0],
-            y: [0, 50, 0],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          className="absolute -bottom-1/4 -right-1/4 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-secondary/25 to-secondary/5 blur-3xl"
-        />
-        <motion.div
-          animate={{
-            scale: [1, 1.3, 1],
-            rotate: [0, 180, 360],
-          }}
-          transition={{
-            duration: 30,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 blur-2xl"
-        />
+        {/* Gradient orbs - static on mobile for performance, animated on desktop */}
+        {isMobile ? (
+          <>
+            {/* Static, smaller, less blurry orbs for mobile */}
+            <div className="absolute -top-1/4 -left-1/4 w-[400px] h-[400px] rounded-full bg-gradient-to-br from-primary/20 to-primary/5 blur-2xl will-change-transform" />
+            <div className="absolute -bottom-1/4 -right-1/4 w-[300px] h-[300px] rounded-full bg-gradient-to-br from-secondary/15 to-secondary/5 blur-2xl will-change-transform" />
+          </>
+        ) : (
+          <>
+            {/* Animated gradient orbs for desktop */}
+            <motion.div
+              animate={{
+                scale: [1, 1.2, 1],
+                x: [0, 50, 0],
+                y: [0, 30, 0],
+              }}
+              transition={{
+                duration: 20,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="absolute -top-1/4 -left-1/4 w-[800px] h-[800px] rounded-full bg-gradient-to-br from-primary/30 to-primary/5 blur-3xl will-change-transform"
+            />
+            <motion.div
+              animate={{
+                scale: [1.2, 1, 1.2],
+                x: [0, -30, 0],
+                y: [0, 50, 0],
+              }}
+              transition={{
+                duration: 25,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="absolute -bottom-1/4 -right-1/4 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-secondary/25 to-secondary/5 blur-3xl will-change-transform"
+            />
+            <motion.div
+              animate={{
+                scale: [1, 1.3, 1],
+                rotate: [0, 180, 360],
+              }}
+              transition={{
+                duration: 30,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 blur-2xl will-change-transform"
+            />
+          </>
+        )}
       </div>
 
       {/* Floating Icons */}
@@ -115,7 +136,7 @@ export function Hero() {
         }}
       />
 
-      <motion.div style={{ y, opacity }} className="relative w-full">
+      <motion.div style={{ y, opacity }} className="relative w-full will-change-transform">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 lg:py-24">
           <div className="text-center max-w-5xl mx-auto">
             {/* Animated Badge */}
@@ -211,7 +232,7 @@ export function Hero() {
                 href="tel:08002343055"
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
-                className="inline-flex h-16 items-center justify-center rounded-full border-2 border-border bg-white/80 backdrop-blur-sm px-10 text-lg font-semibold text-foreground transition-all hover:border-primary hover:text-primary hover:shadow-lg"
+                className="inline-flex h-16 items-center justify-center rounded-full border-2 border-border bg-white/90 md:bg-white/80 md:backdrop-blur-sm px-10 text-lg font-semibold text-foreground transition-all hover:border-primary hover:text-primary hover:shadow-lg"
               >
                 <Phone className="mr-2 h-5 w-5" />
                 0800 234 3055
@@ -226,7 +247,7 @@ export function Hero() {
               className="relative"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent rounded-3xl" />
-              <div className="relative grid grid-cols-3 gap-8 p-8 rounded-3xl border border-border/50 bg-white/50 backdrop-blur-sm max-w-2xl mx-auto">
+              <div className="relative grid grid-cols-3 gap-8 p-8 rounded-3xl border border-border/50 bg-white/80 md:bg-white/50 md:backdrop-blur-sm max-w-2xl mx-auto">
                 {stats.map((stat, index) => (
                   <motion.div
                     key={stat.label}
@@ -282,7 +303,7 @@ export function Hero() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.5 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2"
       >
         <motion.div
           animate={{ y: [0, 10, 0] }}
